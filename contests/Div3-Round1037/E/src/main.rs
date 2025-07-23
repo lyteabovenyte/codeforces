@@ -1,51 +1,73 @@
 use std::io::{self, BufRead};
 
-fn gcd(a: u64, b: u64) -> u64 {
-    if b == 0 { a } else { gcd(b, a % b) }
+fn gcd(mut a: i64, mut b: i64) -> i64 {
+    while b != 0 {
+        let tmp = b;
+        b = a % b;
+        a = tmp;
+    }
+    a.abs()
 }
 
-fn gcd_vector(vec: &[u64]) -> u64 {
-    vec.iter().copied().reduce(gcd).unwrap_or(0)
+fn lcm(a: i64, b: i64) -> i64 {
+    a / gcd(a, b) * b
 }
 
 fn main() {
     let stdin = io::stdin();
-    let mut it = stdin.lock().lines().map(|l| l.unwrap());
-    let t: usize = it.next().unwrap().trim().parse().unwrap();
-    let mut out = String::new();
+    let mut lines = stdin.lock().lines().map(|l| l.unwrap());
+
+    let t: usize = lines.next().unwrap().parse().unwrap();
 
     for _ in 0..t {
-        let line = it.next().unwrap();
-        let mut parts = line.split_whitespace().map(|c| c.parse::<u64>().unwrap());
-        let n = parts.next().unwrap() as usize;
+        let n: usize = lines.next().unwrap().parse().unwrap();
 
-        let first = it
+        if n == 0 {
+            println!("Yes");
+            continue;
+        }
+
+        let p: Vec<i64> = lines
             .next()
             .unwrap()
             .split_whitespace()
-            .map(|c| c.parse::<u64>().unwrap())
-            .collect::<Vec<u64>>();
+            .map(|x| x.parse::<i64>().unwrap())
+            .collect();
 
-        let second = it
+        let s: Vec<i64> = lines
             .next()
             .unwrap()
             .split_whitespace()
-            .map(|c| c.parse::<u64>().unwrap())
-            .collect::<Vec<u64>>();
+            .map(|x| x.parse::<i64>().unwrap())
+            .collect();
 
-        let mut doable = true;
+        let mut a = vec![0i64; n];
         for i in 0..n {
-            let mut combined = Vec::new();
-            combined.extend_from_slice(&first[..=i]);
-            combined.extend_from_slice(&second[i..]);
+            a[i] = lcm(p[i], s[i]);
+        }
 
-            let g = gcd_vector(&combined);
-            if g == 1 {
-                doable = false;
+        // Compute prefix and suffix GCDs
+        let mut prefix = vec![0i64; n];
+        let mut suffix = vec![0i64; n];
+
+        prefix[0] = a[0];
+        for i in 1..n {
+            prefix[i] = gcd(prefix[i - 1], a[i]);
+        }
+
+        suffix[n - 1] = a[n - 1];
+        for i in (0..n - 1).rev() {
+            suffix[i] = gcd(suffix[i + 1], a[i]);
+        }
+
+        let mut ok = true;
+        for i in 0..n {
+            if prefix[i] != p[i] || suffix[i] != s[i] {
+                ok = false;
                 break;
             }
         }
-        out += if doable { "Yes\n" } else { "No\n" };
+
+        println!("{}", if ok { "Yes" } else { "No" });
     }
-    print!("{}", out);
 }
