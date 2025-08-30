@@ -8,7 +8,7 @@ fn main() {
     for _ in 0..t {
         let a: Vec<String> = lines.next().unwrap().unwrap().trim().to_string().split_whitespace().map(|s| s.to_string()).collect();
         let words = a.clone();
-        let lev_dist = solve(words);
+        let lev_dist = levenshtein_distance(words);
         println!("Levenshtein distance: {lev_dist}");
         let first = a[0].clone();
         let second = a[1].clone();
@@ -17,10 +17,19 @@ fn main() {
 
         let min_edit = minimum_deletions_for_palindrome(&a[0]);
         println!("Minimum number of edits to make the string \"{}\" a palindrome: {min_edit}", a[0]);
+
+        let closest_regex = closest_string_to_regex("Saturday", "Sunday");
+        println!("Closest string to regex: {closest_regex}");
+
+        println!("Is \"gattaca\" an interleaving of \"gtaa\" and \"atc\"? {}", is_interleaving("gattaca", "gtaa", "atc")); // true
+        println!("Is \"gatacta\" an interleaving of \"gtaa\" and \"atc\"? {}", is_interleaving("gatacta", "gtaa", "atc")); // false
+        println!("Is \"gattaca\" an interleaving of \"gtaa\" and \"atc\"? {}", is_interleaving("alaei", "aa", "lei"));
+
+        println!();
     }
 }
 
-fn solve(a: Vec<String>) -> i64 {
+fn levenshtein_distance(a: Vec<String>) -> i64 {
     let x = &a[0];
     let y = &a[1];
     
@@ -124,3 +133,84 @@ fn minimum_deletions_for_palindrome(a: &str) -> i64 {
     
     dp[0][n-1]
 }
+
+// Given a string `A` and a regular expression `r`, what is the string in the language of the `r` that is closets the the string `A`
+// the distance between `A` and `r` is the levenshtein distance between them
+// we can use dynamic programming to compute this
+// note that we want the closest string in the language of the regex to the string `A` and return it.
+fn closest_string_to_regex(a: &str, r: &str) -> i64 {
+
+    let mut dp = vec![vec![0; r.len() + 1]; a.len() + 1];
+
+    for i in 1..=a.len() {
+        for j in 1..=r.len() {
+            if a.chars().nth(i - 1) == r.chars().nth(j - 1) {
+                dp[i][j] = dp[i-1][j-1] + 1;
+            } else {
+                dp[i][j] = 0;
+            }
+        }
+    }
+
+    dp[a.len()][r.len()]
+}
+
+
+// define a string `t` to be an interleaving of string `s1` and `s2` if there is a way to interleave the characters
+// of `s1` and `s2`, keeping the left-to-right order of each, to obtain `t`.
+// for example, if `s1` = "gtaa" and `s2` = "atc", then "gattaca" and "gtataac" can be formed as interleavings of `s1` and `s2`.
+// but "gatacta" cannot.
+// Determine if a string `t` is an interleaving of strings `s1` and `s2`.
+fn is_interleaving(t: &str, s1: &str, s2: &str) -> bool {
+    let len1 = s1.len();
+    let len2 = s2.len();
+    let len_t = t.len();
+    
+    // If the total length doesn't match, it's impossible
+    if len1 + len2 != len_t {
+        return false;
+    }
+    
+    // Create DP table: dp[i][j] = true if t[0..i+j] can be formed by interleaving
+    // s1[0..i] and s2[0..j]
+    let mut dp = vec![vec![false; len2 + 1]; len1 + 1];
+    
+    // Base case: empty strings can form empty string
+    dp[0][0] = true;
+    
+    // Fill first row: using only s1
+    for i in 1..=len1 {
+        if s1.chars().nth(i - 1) == t.chars().nth(i - 1) {
+            dp[i][0] = dp[i - 1][0];
+        }
+    }
+    
+    // Fill first column: using only s2
+    for j in 1..=len2 {
+        if s2.chars().nth(j - 1) == t.chars().nth(j - 1) {
+            dp[0][j] = dp[0][j - 1];
+        }
+    }
+    
+    // Fill the rest of the DP table
+    for i in 1..=len1 {
+        for j in 1..=len2 {
+            let t_char = t.chars().nth(i + j - 1);
+            let s1_char = s1.chars().nth(i - 1);
+            let s2_char = s2.chars().nth(j - 1);
+            
+            // Check if current character in t matches s1[i-1]
+            if t_char == s1_char {
+                dp[i][j] = dp[i][j] || dp[i - 1][j];
+            }
+            
+            // Check if current character in t matches s2[j-1]
+            if t_char == s2_char {
+                dp[i][j] = dp[i][j] || dp[i][j - 1];
+            }
+        }
+    }
+    
+    dp[len1][len2]
+}
+
