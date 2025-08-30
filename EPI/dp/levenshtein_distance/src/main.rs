@@ -14,7 +14,9 @@ fn main() {
         let second = a[1].clone();
         let lcs = compute_longest_common_subsequence(&first, &second);
         println!("Longest common subsequence: {lcs}");
-        println!()
+
+        let min_edit = minimum_deletions_for_palindrome(&a[0]);
+        println!("Minimum number of edits to make the string \"{}\" a palindrome: {min_edit}", a[0]);
     }
 }
 
@@ -77,4 +79,48 @@ fn compute_longest_common_subsequence(a: &str, b: &str) -> i64 {
     }
 
     dp[a.len()][b.len()]
+}
+
+
+/// given a string, we want to compute the minimum number of deletions to make it a palindrome
+/// a palindrome is a string that reads the same forwards and backwards
+/// we can use dynamic programming to compute this
+fn minimum_deletions_for_palindrome(a: &str) -> i64 {
+    let n = a.len();
+    
+    // Create a 2D DP table where dp[i][j] represents the minimum deletions
+    // needed to make the substring a[i..j] a palindrome
+    let mut dp = vec![vec![0; n]; n];
+    
+    // Base case: single characters are already palindromes
+    for i in 0..n {
+        dp[i][i] = 0;
+    }
+    
+    // Fill the DP table for substrings of length 2 and above
+    // len, i and j are ensuring that we are processing the dp table in the correct order
+    // so when we need dp[i][j], we have already computed dp[i+1][j-1] and dp[i+1][j] and dp[i][j-1]
+
+    // Dependency Analysis:
+    // For dp[i][j] to be computed correctly, we need:
+    // dp[i+1][j-1]: This is for a substring of length len-2 (inner substring)
+    // dp[i+1][j]: This is for a substring of length len-1 (left substring)
+    // dp[i][j-1]: This is for a substring of length len-1 (right substring)
+    
+    for len in 2..=n { // 2..=n means we process substrings of length 2, 3, 4, ..., n
+        for i in 0..=n-len { // For each length, try all possible starting positions
+            let j = i + len - 1; // Calculate the ending index for the current starting position
+            
+            if a.chars().nth(i) == a.chars().nth(j) {
+                // If characters match, no deletion needed for these positions
+                dp[i][j] = dp[i+1][j-1]; // get the inner substring and check for min deletions
+            } else {
+                // If characters don't match, we need to delete one of them
+                // Take minimum of deleting left character or right character
+                dp[i][j] = 1 + dp[i+1][j].min(dp[i][j-1]);
+            }
+        }
+    }
+    
+    dp[0][n-1]
 }
