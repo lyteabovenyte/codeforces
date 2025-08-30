@@ -24,13 +24,13 @@ fn solve(final_score: usize, individual_play_score: Vec<usize>) -> usize {
     for i in 0..individual_play_score.len() {
         for j in 1..=final_score {
             let without_this_play = if i >= 1 {
-                num_combinations[i - 1][j]
+                num_combinations[i - 1][j] // previously computed
             } else {
                 0
             };
 
             let with_this_play = if j >= individual_play_score[i] {
-                num_combinations[i][j - individual_play_score[i]]
+                num_combinations[i][j - individual_play_score[i]] // we add one of this play to the previously computed combinations
             } else {
                 0
             };
