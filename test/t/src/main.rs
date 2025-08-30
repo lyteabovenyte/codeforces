@@ -1,162 +1,113 @@
 use std::io::{self, BufRead};
 
+fn solve(n: u64) -> u64 {
+    // The key insight: we need to minimize deals first, then cost
+    // For large numbers, we can use mathematical properties
+    
+    // Generate deals efficiently
+    let mut deals = Vec::new();
+    let mut x = 0;
+    while x <= 20 {
+        let quantity = 3_u64.pow(x);
+        if quantity > n {
+            break;
+        }
+        let cost = 3_u64.pow(x + 1) + x as u64 * 3_u64.pow(if x > 0 { x - 1 } else { 0 });
+        deals.push((quantity, cost));
+        x += 1;
+    }
+    
+    // For small numbers, use simple DP
+    if n <= 100 {
+        let mut dp = vec![None; (n + 1) as usize];
+        dp[0] = Some((0, 0)); // (cost, deals)
+        
+        for i in 1..=n {
+            for &(quantity, cost) in &deals {
+                if quantity <= i {
+                    if let Some((prev_cost, prev_deals)) = dp[(i - quantity) as usize] {
+                        let new_cost = prev_cost + cost;
+                        let new_deals = prev_deals + 1;
+                        
+                        match dp[i as usize] {
+                            None => dp[i as usize] = Some((new_cost, new_deals)),
+                            Some((curr_cost, curr_deals)) => {
+                                if new_deals < curr_deals || 
+                                   (new_deals == curr_deals && new_cost < curr_cost) {
+                                    dp[i as usize] = Some((new_cost, new_deals));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return dp[n as usize].unwrap().0;
+    }
+    
+    // For large numbers, use greedy approach with optimization
+    // Sort deals by quantity (descending) to prioritize larger deals
+    deals.sort_by(|a, b| b.0.cmp(&a.0));
+    
+    let mut min_cost = None;
+    
+    // Try greedy approach: use largest deals first
+    let mut remaining = n;
+    let mut total_cost = 0;
+    
+    for &(quantity, cost) in &deals {
+        while remaining >= quantity {
+            remaining -= quantity;
+            total_cost += cost;
+        }
+    }
+    
+    if remaining == 0 {
+        min_cost = Some(total_cost);
+    }
+    
+    // If greedy didn't work, try some variations
+    if min_cost.is_none() {
+        // Try using smaller deals to fill the remainder
+        for i in 0..deals.len() {
+            let mut remaining = n;
+            let mut total_cost = 0;
+            
+            // Use deals from index i onwards first
+            for j in i..deals.len() {
+                let (quantity, cost) = deals[j];
+                while remaining >= quantity {
+                    remaining -= quantity;
+                    total_cost += cost;
+                }
+            }
+            
+            // Then use smaller deals
+            for j in 0..i {
+                let (quantity, cost) = deals[j];
+                while remaining >= quantity {
+                    remaining -= quantity;
+                    total_cost += cost;
+                }
+            }
+            
+            if remaining == 0 {
+                min_cost = Some(min_cost.unwrap_or(u64::MAX).min(total_cost));
+            }
+        }
+    }
+    
+    min_cost.unwrap()
+}
+
 fn main() {
     let stdin = io::stdin();
     let mut lines = stdin.lock().lines();
-
-    let t: i64 = lines.next().unwrap().unwrap().trim().parse().unwrap();
+    
+    let t: usize = lines.next().unwrap().unwrap().trim().parse().unwrap();
+    
     for _ in 0..t {
-        let n_k_line = lines.next().unwrap().unwrap();
-        let n_k: Vec<i64> = n_k_line.trim().split_whitespace().map(|s| s.parse().unwrap()).collect();
-        let (n, k) = (n_k[0], n_k[1]);
-        let binary_line = lines.next().unwrap().unwrap();
-        let a: Vec<i64> = binary_line.trim().chars().map(|c| c.to_digit(10).unwrap() as i64).collect();
-        
-        // first we should check
-        if check(a.clone(), k) {
-            let solution = solve(a, k, n);
-            if !solution.is_empty() {
-                println!("YES");
-                println!("{}", solution.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(" "));
-            } else {
-                println!("NO");
-            }
-        } else {
-            println!("NO");
-        }
+        let n: u64 = lines.next().unwrap().unwrap().trim().parse().unwrap();
+        println!("{}", solve(n));
     }
-}
-
-fn solve(a: Vec<i64>, k: i64, n: i64) -> Vec<i64> {
-    let n = n as usize;
-    let k = k as usize;
-    
-    // If k > n, we just need to place the largest element at any zero position
-    if k > n {
-        let mut result = vec![0; n];
-        let mut current = n as i64;
-        
-        // Place numbers at zero positions first
-        for i in 0..n {
-            if a[i] == 0 {
-                result[i] = current;
-                current -= 1;
-            }
-        }
-        
-        // Fill remaining positions
-        for i in 0..n {
-            if result[i] == 0 {
-                result[i] = current;
-                current -= 1;
-            }
-        }
-        
-        return result;
-    }
-    
-    // For each position, we need to check if it can be the maximum in any window
-    let mut can_be_max = vec![true; n];
-    
-    // For each window of length k, mark positions that cannot be the maximum
-    for start in 0..=n - k {
-        let window = start..start + k;
-        let mut has_zero = false;
-        
-        // Check if this window has any zero positions
-        for pos in window.clone() {
-            if a[pos] == 0 {
-                has_zero = true;
-                break;
-            }
-        }
-        
-        // If no zero positions in this window, it's impossible
-        if !has_zero {
-            return vec![];
-        }
-        
-        // Mark positions with 1s as cannot be maximum in this window
-        for pos in window {
-            if a[pos] == 1 {
-                can_be_max[pos] = false;
-            }
-        }
-    }
-    
-    // Now we know which positions can be maximum
-    // We need to assign numbers so that in each window, the maximum is at a zero position
-    let mut result = vec![0; n];
-    let mut used = vec![false; n + 1];
-    
-    // Start with the largest number and place it at a valid position
-    let mut current_num = n as i64;
-    
-    // First, place numbers at positions that can be maximum
-    for i in 0..n {
-        if can_be_max[i] && result[i] == 0 {
-            result[i] = current_num;
-            used[current_num as usize] = true;
-            current_num -= 1;
-        }
-    }
-    
-    // Fill remaining positions
-    for i in 0..n {
-        if result[i] == 0 {
-            while used[current_num as usize] {
-                current_num -= 1;
-            }
-            result[i] = current_num;
-            used[current_num as usize] = true;
-            current_num -= 1;
-        }
-    }
-    
-    // Verify the solution
-    if is_valid_solution(&result, &a, k) {
-        result
-    } else {
-        vec![]
-    }
-}
-
-fn is_valid_solution(perm: &Vec<i64>, a: &Vec<i64>, k: usize) -> bool {
-    let n = perm.len();
-    if k > n {
-        return true;
-    }
-    
-    for i in 0..=n - k {
-        let subseq = &perm[i..i + k];
-        let max_val = subseq.iter().max().unwrap();
-        let max_pos = i + subseq.iter().position(|&x| x == *max_val).unwrap();
-        
-        // The maximum element should be at a position where a[i] == 0
-        if a[max_pos] != 0 {
-            return false;
-        }
-    }
-    true
-}
-
-fn check(a: Vec<i64>, k: i64) -> bool {
-    let n = a.len();
-    if k > n as i64 {
-        if !a.iter().any(|&x| x == 0) {
-            return false;
-        }
-        return true;
-    }
-
-    // todo: check for k == 0
-    
-    let k = k as usize;
-    for i in 0..=n - k {
-        let subseq = &a[i..i + k];
-        if !subseq.iter().any(|&x| x == 0) {
-            return false;
-        }
-    }
-    true
 }
