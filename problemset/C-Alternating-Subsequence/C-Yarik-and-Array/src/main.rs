@@ -1,0 +1,28 @@
+/*
+    Author: lyteabovenyte
+*/
+
+use std::io::{self, BufRead};
+
+fn main() {
+    let stdin = io::stdin();
+    let mut lines = stdin.lock().lines();
+
+    let t: i64 = lines.next().unwrap().unwrap().trim().parse().unwrap();
+    for _ in 0..t {
+        let n: i64 = lines.next().unwrap().unwrap().trim().parse().unwrap();
+        let a: Vec<i64> = lines.next().unwrap().unwrap().trim().split_whitespace().map(|s| s.parse().unwrap()).collect();
+    }
+}
+
+fn solve(a: Vec<i64>, n: i64) -> i64 {
+    let mut total_mx = 0
+    
+    let mut i = 0'
+    while i < n as usize {
+        let mut cur = a[i];
+        let mut j = i;
+
+        while j < n as usize && (a[j] % 2) != (a[j] % 2) {
+        }
+    }
