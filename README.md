@@ -3,7 +3,9 @@
 </div>
 
 ----
- problems and contests solved in *Rust*, repo itself is self-explanatory
+<div align="center">
+	problems and contests solved in <i>Rust</i>, repo itself is self-explanatory
+</div>
 
 <div align="center">
 	<a href="https://codeforces.com/profile/lyteabovenyte">My Account</a>
