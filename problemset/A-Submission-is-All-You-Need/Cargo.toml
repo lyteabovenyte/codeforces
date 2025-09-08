@@ -1,0 +1,6 @@
+[package]
+name = "A-Submission-is-All-You-Need"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
