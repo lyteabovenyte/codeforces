@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/lyteatnyte/codeforces/cpp/1-2.1038",
+      "program": "/Users/lyteatnyte/codeforces/cpp/1-2.1038/build/Debug/outDebug"
+    }
+  ]
+}
