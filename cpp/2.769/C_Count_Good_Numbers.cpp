@@ -83,44 +83,69 @@ struct Mint {
 #define debug(x)
 #endif
 
-//--------------------------
-// Solve Function
-//--------------------------
-void solve() {
-    int n;
-    cin >> n;
-    vi a(n);
-    for (int i = 0; i < n; i++) {
-        cin >> a[i];
-    }
+int val(int n) {
     int ans = 0;
-    int covered = -1;
-    vector<array<int, 3>> s;
-    for (int i = 0; i < n; i++) {
-        for (auto& t : s) {
-            t[2] = gcd(t[2], a[i]);
-        }
-        s.pb({ i, i, a[i] }); // start, end, gcd
-        int cnt = 0;          // current size of the compressed segments
-        for (int j = 0; j < (int)sz(s); j++) {
-            if (cnt > 0 && s[j][2] == s[cnt - 1][2]) {
-                s[cnt - 1][1] = s[j][1]; // change ending point
-            } else {
-                s[cnt++] = s[j]; // keep the segment
-            }
-        }
-        s.resize(cnt);
-        for (auto& t : s) {
-            int at = i - t[2] + 1;
-            if (at >= t[0] && at <= t[1]) {
-                if (at > covered) {
-                    ans++;
-                    covered = i;
+    for (int a2 = 0; a2 < 2; a2++) {
+        for (int a3 = 0; a3 < 2; a3++) {
+            for (int a5 = 0; a5 < 2; a5++) {
+                for (int a7 = 0; a7 < 2; a7++) {
+                    int ct = 0, div = 1;
+                    if (a2) {
+                        div *= 2;
+                        ct++;
+                    }
+                    if (a3) {
+                        div *= 3;
+                        ct++;
+                    }
+                    if (a5) {
+                        div *= 5;
+                        ct++;
+                    }
+                    if (a7) {
+                        div *= 7;
+                        ct++;
+                    }
+                    if (ct % 2 == 0) {
+                        ans += n / div;
+                    } else {
+                        ans -= n / div;
+                    }
                 }
             }
         }
-        cout << ans << " ";
     }
+    return ans;
+}
+//--------------------------
+// Solve Function
+//--------------------------
+void solve2() {
+    int l, r;
+    cin >> l >> r;
+    cout << val(r) - val(l - 1) << "\n";
+}
+
+bool good(int x) {
+    return (x % 2 && x % 3 && x % 5 && x % 7);
+}
+
+int get_naive(int x) {
+    int ans = 0;
+    for (int i = 0; i < x; i++) {
+        if (good(i)) ans++;
+    }
+    return ans;
+}
+
+int get(int r) {
+    return (r / 210) * get_naive(210) + get_naive(r % 210);
+}
+
+void solve() {
+    int l, r;
+    cin >> l >> r;
+    cout << get(r + 1) - get(l) << "\n";
 }
 
 //--------------------------
@@ -128,6 +153,10 @@ void solve() {
 //--------------------------
 int32_t main() {
     fastio;
-    solve();
+    int t;
+    cin >> t;
+    while (t--) {
+        solve();
+    }
     return 0;
 }

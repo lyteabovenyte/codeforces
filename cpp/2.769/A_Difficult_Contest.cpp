@@ -87,40 +87,16 @@ struct Mint {
 // Solve Function
 //--------------------------
 void solve() {
-    int n;
-    cin >> n;
-    vi a(n);
-    for (int i = 0; i < n; i++) {
-        cin >> a[i];
+    string s;
+    cin >> s;
+    string t, rest;
+    for (char c : s) {
+        if (c == 'T') t += c;
+        else
+            rest += c;
     }
-    int ans = 0;
-    int covered = -1;
-    vector<array<int, 3>> s;
-    for (int i = 0; i < n; i++) {
-        for (auto& t : s) {
-            t[2] = gcd(t[2], a[i]);
-        }
-        s.pb({ i, i, a[i] }); // start, end, gcd
-        int cnt = 0;          // current size of the compressed segments
-        for (int j = 0; j < (int)sz(s); j++) {
-            if (cnt > 0 && s[j][2] == s[cnt - 1][2]) {
-                s[cnt - 1][1] = s[j][1]; // change ending point
-            } else {
-                s[cnt++] = s[j]; // keep the segment
-            }
-        }
-        s.resize(cnt);
-        for (auto& t : s) {
-            int at = i - t[2] + 1;
-            if (at >= t[0] && at <= t[1]) {
-                if (at > covered) {
-                    ans++;
-                    covered = i;
-                }
-            }
-        }
-        cout << ans << " ";
-    }
+    string res = t + rest;
+    cout << res << "\n";
 }
 
 //--------------------------
@@ -128,6 +104,10 @@ void solve() {
 //--------------------------
 int32_t main() {
     fastio;
-    solve();
+    int t;
+    cin >> t;
+    while (t--) {
+        solve();
+    }
     return 0;
 }
