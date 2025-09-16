@@ -79,7 +79,7 @@ struct AhoCorasick {
         t.emplace_back();
         return (int)t.size() - 1;
     }
-    static inline int cid(char c) { return (c == '(') ? 0 : 1; }
+    static inline int cid(char c) { return (c == '(') ? 0 : 1; } // map '('->0, ')'=>1
 
     int add(const string& s) {
         int p = 1;
