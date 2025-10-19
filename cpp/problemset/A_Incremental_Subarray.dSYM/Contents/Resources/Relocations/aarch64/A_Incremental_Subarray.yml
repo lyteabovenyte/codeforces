@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/lyteatnyte/cp/codeforces/cpp/problemset/A_Incremental_Subarray'
+relocations:     []
+...
