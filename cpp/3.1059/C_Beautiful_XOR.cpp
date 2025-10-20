@@ -99,24 +99,55 @@ struct Mint {
 #define debug(x)
 #endif
 
+tuple<int, int, int> helper(int a, int b) {
+
+    // find indices where a and b differ
+    vi indices;
+    for (int i = 0; i < 31; i++) {
+        if (((a >> i) & 1) != ((b >> i) & 1)) {
+            indices.pb(i);
+        }
+    }
+    // for int c = put 1 in all indices where a and b differ and 0 elsewhere
+    int c = 0;
+
+    // finding the maximum possible value of c such that it is less than a
+    for (int idx : indices) {
+        if (c + (1 << idx) < a) {
+            c += (1 << idx);
+        }
+    }
+    return { a ^ c, b, c };
+}
+
 //--------------------------
 // Solve Function
 //--------------------------
 void solve() {
     int a, b;
     cin >> a >> b;
-    string a1 = bitset<64>(a).to_string();
-    string b1 = bitset<64>(b).to_string();
-
-    int xor_val = a ^ b;
-    vector<int> indices;
-    int bits = sizeof(int) * 8;
-    for (int i = 0; i < bits; i++) {
-        if (xor_val & (1 << i)) {
-            indices.push_back(i);
+    if (a == b) {
+        cout << 0 << "\n";
+        return;
+    }
+    vi results;
+    int c;
+    for (int i = 0; i < 100; i++) {
+        auto res = helper(a, b);
+        a = get<0>(res);
+        b = get<1>(res);
+        c = get<2>(res);
+        results.pb(c);
+        if (a == b) {
+            cout << sz(results) << "\n";
+            for (int val : results) {
+                cout << val << " ";
+            }
+            cout << "\n";
+            return;
         }
     }
-    
+    cout << -1 << "\n";
 }
 
 //--------------------------
