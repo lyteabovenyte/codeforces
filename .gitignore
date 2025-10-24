@@ -45,4 +45,6 @@ Cargo.lock
 .vscode
 *.json
 */settings.json
+*.bin
+*/*.bin
 # End of https://www.toptal.com/developers/gitignore/api/rust,git
