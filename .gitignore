@@ -38,4 +38,11 @@ Cargo.lock
 .Ds_Store
 .DS_Store
 .Ds_*
+.cph/
+.cph
+*.prob
+.vscode/
+.vscode
+*.json
+*/settings.json
 # End of https://www.toptal.com/developers/gitignore/api/rust,git
